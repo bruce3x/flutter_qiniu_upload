@@ -12,7 +12,7 @@ class QiniuUpload extends QiniuFlutterApi {
   static final _completerMap = HashMap<String, Completer<QiniuFile>>();
   static final _progressMap = HashMap<String, StreamController<QiniuProgress>>();
 
-  static void install() {
+  static void initialize() {
     QiniuFlutterApi.setup(QiniuUpload());
   }
 

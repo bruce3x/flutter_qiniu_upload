@@ -12,7 +12,7 @@ const upToken = uploadToken;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  QiniuUpload.install();
+  QiniuUpload.initialize();
   runApp(MyApp());
 }
 
