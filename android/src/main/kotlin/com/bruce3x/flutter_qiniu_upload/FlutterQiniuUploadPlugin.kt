@@ -1,53 +1,82 @@
 package com.bruce3x.flutter_qiniu_upload
 
-import androidx.annotation.NonNull;
-
+import com.bruce3x.flutter_qiniu_upload.Api.*
+import com.qiniu.android.common.FixedZone
+import com.qiniu.android.storage.*
+import com.qiniu.android.storage.persistent.FileRecorder
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
+import java.io.File
+import java.util.*
 
-/** FlutterQiniuUploadPlugin */
-public class FlutterQiniuUploadPlugin: FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private lateinit var channel : MethodChannel
+class FlutterQiniuUploadPlugin : FlutterPlugin, QiniuHostApi {
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "flutter_qiniu_upload")
-    channel.setMethodCallHandler(this);
-  }
+    private var binding: FlutterPlugin.FlutterPluginBinding? = null
+    private var flutterApi: QiniuFlutterApi? = null
 
-  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-  // plugin registration via this function while apps migrate to use the new Android APIs
-  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-  //
-  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-  // in the same class.
-  companion object {
-    @JvmStatic
-    fun registerWith(registrar: Registrar) {
-      val channel = MethodChannel(registrar.messenger(), "flutter_qiniu_upload")
-      channel.setMethodCallHandler(FlutterQiniuUploadPlugin())
+    private val nullReply = QiniuFlutterApi.Reply<Void> { }
+
+    private val manager: UploadManager by lazy {
+        val context = binding?.applicationContext
+        requireNotNull(context)
+        val recorder = FileRecorder(File(context.cacheDir, "qiniu").absolutePath)
+        val keyGenerator = KeyGenerator { key, file -> "${key}_._${file.absolutePath.reversed()}" }
+        val configuration = Configuration.Builder()
+                .useHttps(true)
+                .recorder(recorder, keyGenerator)
+                .zone(FixedZone.zone0)
+                .build()
+
+        UploadManager(configuration)
     }
-  }
 
-  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else {
-      result.notImplemented()
+    private val cancellationStates = hashMapOf<String, Boolean>()
+
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        this.binding = binding
+        this.flutterApi = QiniuFlutterApi(binding.binaryMessenger)
+        QiniuHostApi.setup(binding.binaryMessenger, this)
     }
-  }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
-  }
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        QiniuHostApi.setup(binding.binaryMessenger, null)
+        this.flutterApi = null
+        this.binding = null
+    }
+
+    override fun upload(request: QiniuUploadRequest): QiniuUploadResult {
+        val result = QiniuUploadResult().apply {
+            this.requestId = UUID.randomUUID().toString()
+            this.request = request
+        }
+        val completionHandler = UpCompletionHandler { _, _, response ->
+            val file = QiniuFile().apply {
+                this.hash = response.getString("hash")
+                this.key = response.getString("key")
+                this.mimeType = response.getString("mimeType")
+                this.fileSize = response.getLong("fsize")
+            }
+            val payload = QiniuTaskComplete().apply {
+                this.requestId = result.requestId
+                this.file = file
+            }
+            flutterApi?.taskComplete(payload, nullReply)
+        }
+        val progressHandler = UpProgressHandler { _, percent ->
+            val payload = QiniuTaskUpdate().apply {
+                this.requestId = result.requestId
+                this.percent = percent
+            }
+            flutterApi?.taskUpdate(payload, nullReply)
+        }
+        val cancellationSignal = UpCancellationSignal { cancellationStates.getOrPut(result.requestId, { false }) }
+        val options = UploadOptions(null, null, false, progressHandler, cancellationSignal)
+        cancellationStates[result.requestId] = false
+        manager.put(request.file, request.key, request.token, completionHandler, options)
+
+        return result
+    }
+
+    override fun cancel(arg: QiniuUploadResult) {
+        cancellationStates[arg.requestId] = false
+    }
 }
