@@ -29,7 +29,7 @@ class FlutterQiniuUploadPlugin : FlutterPlugin, QiniuHostApi {
         UploadManager(configuration)
     }
 
-    private val cancellationStates = hashMapOf<String, Boolean>()
+    private val cancellationMap = hashMapOf<String, Boolean>()
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         this.binding = binding
@@ -46,20 +46,30 @@ class FlutterQiniuUploadPlugin : FlutterPlugin, QiniuHostApi {
     override fun upload(request: QiniuUploadRequest): QiniuUploadResult {
         val result = QiniuUploadResult().apply {
             this.requestId = UUID.randomUUID().toString()
-            this.request = request
         }
-        val completionHandler = UpCompletionHandler { _, _, response ->
-            val file = QiniuFile().apply {
-                this.hash = response.getString("hash")
-                this.key = response.getString("key")
-                this.mimeType = response.getString("mimeType")
-                this.fileSize = response.getLong("fsize")
+        val completionHandler = UpCompletionHandler { _, info, response ->
+            if (response == null) {
+                if (info == null || !info.isCancelled) {
+                    val payload = QiniuTaskError().apply {
+                        requestId = result.requestId
+                        error = info.error ?: "Unknown"
+                        statusCode = info.statusCode.toLong()
+                    }
+                    flutterApi?.taskError(payload, nullReply)
+                } else {
+                    val payload = QiniuTaskCancellation().apply {
+                        requestId = result.requestId;
+                    }
+                    flutterApi?.taskCancelled(payload, nullReply)
+                }
+            } else {
+                val payload = QiniuTaskComplete().apply {
+                    this.requestId = result.requestId
+                    this.hash = response.optString("hash")
+                    this.key = response.optString("key")
+                }
+                flutterApi?.taskComplete(payload, nullReply)
             }
-            val payload = QiniuTaskComplete().apply {
-                this.requestId = result.requestId
-                this.file = file
-            }
-            flutterApi?.taskComplete(payload, nullReply)
         }
         val progressHandler = UpProgressHandler { _, percent ->
             val payload = QiniuTaskUpdate().apply {
@@ -68,15 +78,15 @@ class FlutterQiniuUploadPlugin : FlutterPlugin, QiniuHostApi {
             }
             flutterApi?.taskUpdate(payload, nullReply)
         }
-        val cancellationSignal = UpCancellationSignal { cancellationStates.getOrPut(result.requestId, { false }) }
-        val options = UploadOptions(null, null, false, progressHandler, cancellationSignal)
-        cancellationStates[result.requestId] = false
+        val cancellationSignal = UpCancellationSignal { cancellationMap.getOrPut(result.requestId, { false }) }
+        val options = UploadOptions(emptyMap(), null, false, progressHandler, cancellationSignal)
+        cancellationMap[result.requestId] = false
         manager.put(request.file, request.key, request.token, completionHandler, options)
 
         return result
     }
 
     override fun cancel(arg: QiniuUploadResult) {
-        cancellationStates[arg.requestId] = false
+        cancellationMap[arg.requestId] = true
     }
 }

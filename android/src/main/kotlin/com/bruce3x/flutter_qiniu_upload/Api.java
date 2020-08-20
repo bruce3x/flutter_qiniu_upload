@@ -19,22 +19,15 @@ public class Api {
     public String getRequestId() { return requestId; }
     public void setRequestId(String setterArg) { this.requestId = setterArg; }
 
-    private QiniuUploadRequest request;
-    public QiniuUploadRequest getRequest() { return request; }
-    public void setRequest(QiniuUploadRequest setterArg) { this.request = setterArg; }
-
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
       toMapResult.put("requestId", requestId);
-      toMapResult.put("request", request);
       return toMapResult;
     }
     static QiniuUploadResult fromMap(HashMap map) {
       QiniuUploadResult fromMapResult = new QiniuUploadResult();
       Object requestId = map.get("requestId");
       fromMapResult.requestId = (String)requestId;
-      Object request = map.get("request");
-      fromMapResult.request = (QiniuUploadRequest)request;
       return fromMapResult;
     }
   }
@@ -104,28 +97,6 @@ public class Api {
     public String getRequestId() { return requestId; }
     public void setRequestId(String setterArg) { this.requestId = setterArg; }
 
-    private QiniuFile file;
-    public QiniuFile getFile() { return file; }
-    public void setFile(QiniuFile setterArg) { this.file = setterArg; }
-
-    HashMap toMap() {
-      HashMap<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("requestId", requestId);
-      toMapResult.put("file", file);
-      return toMapResult;
-    }
-    static QiniuTaskComplete fromMap(HashMap map) {
-      QiniuTaskComplete fromMapResult = new QiniuTaskComplete();
-      Object requestId = map.get("requestId");
-      fromMapResult.requestId = (String)requestId;
-      Object file = map.get("file");
-      fromMapResult.file = (QiniuFile)file;
-      return fromMapResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
-  public static class QiniuFile {
     private String hash;
     public String getHash() { return hash; }
     public void setHash(String setterArg) { this.hash = setterArg; }
@@ -134,32 +105,73 @@ public class Api {
     public String getKey() { return key; }
     public void setKey(String setterArg) { this.key = setterArg; }
 
-    private String mimeType;
-    public String getMimeType() { return mimeType; }
-    public void setMimeType(String setterArg) { this.mimeType = setterArg; }
-
-    private Long fileSize;
-    public Long getFileSize() { return fileSize; }
-    public void setFileSize(Long setterArg) { this.fileSize = setterArg; }
-
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("requestId", requestId);
       toMapResult.put("hash", hash);
       toMapResult.put("key", key);
-      toMapResult.put("mimeType", mimeType);
-      toMapResult.put("fileSize", fileSize);
       return toMapResult;
     }
-    static QiniuFile fromMap(HashMap map) {
-      QiniuFile fromMapResult = new QiniuFile();
+    static QiniuTaskComplete fromMap(HashMap map) {
+      QiniuTaskComplete fromMapResult = new QiniuTaskComplete();
+      Object requestId = map.get("requestId");
+      fromMapResult.requestId = (String)requestId;
       Object hash = map.get("hash");
       fromMapResult.hash = (String)hash;
       Object key = map.get("key");
       fromMapResult.key = (String)key;
-      Object mimeType = map.get("mimeType");
-      fromMapResult.mimeType = (String)mimeType;
-      Object fileSize = map.get("fileSize");
-      fromMapResult.fileSize = (fileSize == null) ? null : ((fileSize instanceof Integer) ? (Integer)fileSize : (Long)fileSize);
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class QiniuTaskCancellation {
+    private String requestId;
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String setterArg) { this.requestId = setterArg; }
+
+    HashMap toMap() {
+      HashMap<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("requestId", requestId);
+      return toMapResult;
+    }
+    static QiniuTaskCancellation fromMap(HashMap map) {
+      QiniuTaskCancellation fromMapResult = new QiniuTaskCancellation();
+      Object requestId = map.get("requestId");
+      fromMapResult.requestId = (String)requestId;
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class QiniuTaskError {
+    private String requestId;
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String setterArg) { this.requestId = setterArg; }
+
+    private String error;
+    public String getError() { return error; }
+    public void setError(String setterArg) { this.error = setterArg; }
+
+    private Long statusCode;
+    public Long getStatusCode() { return statusCode; }
+    public void setStatusCode(Long setterArg) { this.statusCode = setterArg; }
+
+    HashMap toMap() {
+      HashMap<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("requestId", requestId);
+      toMapResult.put("error", error);
+      toMapResult.put("statusCode", statusCode);
+      return toMapResult;
+    }
+    static QiniuTaskError fromMap(HashMap map) {
+      QiniuTaskError fromMapResult = new QiniuTaskError();
+      Object requestId = map.get("requestId");
+      fromMapResult.requestId = (String)requestId;
+      Object error = map.get("error");
+      fromMapResult.error = (String)error;
+      Object statusCode = map.get("statusCode");
+      fromMapResult.statusCode = (statusCode == null) ? null : ((statusCode instanceof Integer) ? (Integer)statusCode : (Long)statusCode);
       return fromMapResult;
     }
   }
@@ -236,6 +248,22 @@ public class Api {
     public void taskComplete(QiniuTaskComplete argInput, Reply<Void> callback) {
       BasicMessageChannel<Object> channel =
           new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.QiniuFlutterApi.taskComplete", new StandardMessageCodec());
+      HashMap inputMap = argInput.toMap();
+      channel.send(inputMap, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void taskCancelled(QiniuTaskCancellation argInput, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.QiniuFlutterApi.taskCancelled", new StandardMessageCodec());
+      HashMap inputMap = argInput.toMap();
+      channel.send(inputMap, channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void taskError(QiniuTaskError argInput, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.QiniuFlutterApi.taskError", new StandardMessageCodec());
       HashMap inputMap = argInput.toMap();
       channel.send(inputMap, channelReply -> {
         callback.reply(null);

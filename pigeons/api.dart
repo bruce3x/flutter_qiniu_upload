@@ -10,9 +10,8 @@ class QiniuUploadRequest {
 
 class QiniuUploadResult {
   final String requestId;
-  final QiniuUploadRequest request;
 
-  QiniuUploadResult(this.requestId, this.request);
+  QiniuUploadResult(this.requestId);
 }
 
 class QiniuTaskUpdate {
@@ -24,18 +23,24 @@ class QiniuTaskUpdate {
 
 class QiniuTaskComplete {
   final String requestId;
-  final QiniuFile file;
-
-  QiniuTaskComplete(this.requestId, this.file);
-}
-
-class QiniuFile {
   final String hash;
   final String key;
-  final String mimeType;
-  final int fileSize;
 
-  QiniuFile(this.hash, this.key, this.mimeType, this.fileSize);
+  QiniuTaskComplete(this.requestId, this.hash, this.key);
+}
+
+class QiniuTaskCancellation {
+  final String requestId;
+
+  QiniuTaskCancellation(this.requestId);
+}
+
+class QiniuTaskError {
+  final String requestId;
+  final String error;
+  final int statusCode;
+
+  QiniuTaskError(this.requestId, this.error, this.statusCode);
 }
 
 @HostApi()
@@ -50,6 +55,10 @@ abstract class QiniuFlutterApi {
   void taskUpdate(QiniuTaskUpdate data);
 
   void taskComplete(QiniuTaskComplete data);
+
+  void taskCancelled(QiniuTaskCancellation data);
+
+  void taskError(QiniuTaskError data);
 }
 
 void configurePigeon(PigeonOptions options) {
