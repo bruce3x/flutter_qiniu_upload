@@ -12,6 +12,7 @@ class QiniuUpload extends QiniuFlutterApi {
   static final _completerMap = HashMap<String, Completer>();
   static final _progressMap = HashMap<String, StreamController>();
 
+  /// initialize library first.
   static void initialize() {
     QiniuFlutterApi.setup(QiniuUpload());
   }
@@ -52,10 +53,14 @@ class QiniuUpload extends QiniuFlutterApi {
     return result.requestId;
   }
 
+  /// listen the uploading progress stream.
+  /// [requestId] returned by [upload]
   static Stream<QiniuProgress> progress(String requestId) {
     return _progressMap[requestId].stream;
   }
 
+  /// cancel the uploading task.
+  /// [requestId] returned by [upload]
   static Future<void> cancel(String requestId) async {
     await _hostApi.cancel(QiniuUploadResult()..requestId = requestId);
   }
