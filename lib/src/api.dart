@@ -2,19 +2,22 @@
 // See also: https://pub.dev/packages/pigeon
 // ignore_for_file: public_member_api_docs, non_constant_identifier_names, avoid_as, unused_import
 import 'dart:async';
+
 import 'package:flutter/services.dart';
 
 class QiniuUploadResult {
   String requestId;
+
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
     pigeonMap['requestId'] = requestId;
     return pigeonMap;
   }
+
   // ignore: unused_element
   static QiniuUploadResult _fromMap(Map<dynamic, dynamic> pigeonMap) {
-    if (pigeonMap == null){
+    if (pigeonMap == null) {
       return null;
     }
     final QiniuUploadResult result = QiniuUploadResult();
@@ -27,6 +30,7 @@ class QiniuUploadRequest {
   String key;
   String token;
   String file;
+
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -35,9 +39,10 @@ class QiniuUploadRequest {
     pigeonMap['file'] = file;
     return pigeonMap;
   }
+
   // ignore: unused_element
   static QiniuUploadRequest _fromMap(Map<dynamic, dynamic> pigeonMap) {
-    if (pigeonMap == null){
+    if (pigeonMap == null) {
       return null;
     }
     final QiniuUploadRequest result = QiniuUploadRequest();
@@ -51,6 +56,7 @@ class QiniuUploadRequest {
 class QiniuTaskUpdate {
   String requestId;
   double percent;
+
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -58,9 +64,10 @@ class QiniuTaskUpdate {
     pigeonMap['percent'] = percent;
     return pigeonMap;
   }
+
   // ignore: unused_element
   static QiniuTaskUpdate _fromMap(Map<dynamic, dynamic> pigeonMap) {
-    if (pigeonMap == null){
+    if (pigeonMap == null) {
       return null;
     }
     final QiniuTaskUpdate result = QiniuTaskUpdate();
@@ -74,6 +81,7 @@ class QiniuTaskComplete {
   String requestId;
   String hash;
   String key;
+
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -82,9 +90,10 @@ class QiniuTaskComplete {
     pigeonMap['key'] = key;
     return pigeonMap;
   }
+
   // ignore: unused_element
   static QiniuTaskComplete _fromMap(Map<dynamic, dynamic> pigeonMap) {
-    if (pigeonMap == null){
+    if (pigeonMap == null) {
       return null;
     }
     final QiniuTaskComplete result = QiniuTaskComplete();
@@ -97,15 +106,17 @@ class QiniuTaskComplete {
 
 class QiniuTaskCancellation {
   String requestId;
+
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
     pigeonMap['requestId'] = requestId;
     return pigeonMap;
   }
+
   // ignore: unused_element
   static QiniuTaskCancellation _fromMap(Map<dynamic, dynamic> pigeonMap) {
-    if (pigeonMap == null){
+    if (pigeonMap == null) {
       return null;
     }
     final QiniuTaskCancellation result = QiniuTaskCancellation();
@@ -118,6 +129,7 @@ class QiniuTaskError {
   String requestId;
   String error;
   int statusCode;
+
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -126,9 +138,10 @@ class QiniuTaskError {
     pigeonMap['statusCode'] = statusCode;
     return pigeonMap;
   }
+
   // ignore: unused_element
   static QiniuTaskError _fromMap(Map<dynamic, dynamic> pigeonMap) {
-    if (pigeonMap == null){
+    if (pigeonMap == null) {
       return null;
     }
     final QiniuTaskError result = QiniuTaskError();
@@ -142,15 +155,15 @@ class QiniuTaskError {
 class QiniuHostApi {
   Future<QiniuUploadResult> upload(QiniuUploadRequest arg) async {
     final Map<dynamic, dynamic> requestMap = arg._toMap();
-    const BasicMessageChannel<dynamic> channel =
-        BasicMessageChannel<dynamic>('dev.flutter.pigeon.QiniuHostApi.upload', StandardMessageCodec());
-    
+    const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+        'dev.flutter.pigeon.QiniuHostApi.upload', StandardMessageCodec());
+
     final Map<dynamic, dynamic> replyMap = await channel.send(requestMap);
     if (replyMap == null) {
       throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null);
+          code: 'channel-error',
+          message: 'Unable to establish connection on channel.',
+          details: null);
     } else if (replyMap['error'] != null) {
       final Map<dynamic, dynamic> error = replyMap['error'];
       throw PlatformException(
@@ -160,19 +173,19 @@ class QiniuHostApi {
     } else {
       return QiniuUploadResult._fromMap(replyMap['result']);
     }
-    
   }
+
   Future<void> cancel(QiniuUploadResult arg) async {
     final Map<dynamic, dynamic> requestMap = arg._toMap();
-    const BasicMessageChannel<dynamic> channel =
-        BasicMessageChannel<dynamic>('dev.flutter.pigeon.QiniuHostApi.cancel', StandardMessageCodec());
-    
+    const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+        'dev.flutter.pigeon.QiniuHostApi.cancel', StandardMessageCodec());
+
     final Map<dynamic, dynamic> replyMap = await channel.send(requestMap);
     if (replyMap == null) {
       throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-        details: null);
+          code: 'channel-error',
+          message: 'Unable to establish connection on channel.',
+          details: null);
     } else if (replyMap['error'] != null) {
       final Map<dynamic, dynamic> error = replyMap['error'];
       throw PlatformException(
@@ -182,52 +195,63 @@ class QiniuHostApi {
     } else {
       // noop
     }
-    
   }
 }
 
 abstract class QiniuFlutterApi {
   void taskUpdate(QiniuTaskUpdate arg);
+
   void taskComplete(QiniuTaskComplete arg);
+
   void taskCancelled(QiniuTaskCancellation arg);
+
   void taskError(QiniuTaskError arg);
+
   static void setup(QiniuFlutterApi api) {
     {
-      const BasicMessageChannel<dynamic> channel =
-          BasicMessageChannel<dynamic>('dev.flutter.pigeon.QiniuFlutterApi.taskUpdate', StandardMessageCodec());
+      const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+          'dev.flutter.pigeon.QiniuFlutterApi.taskUpdate',
+          StandardMessageCodec());
       channel.setMessageHandler((dynamic message) async {
-        final Map<dynamic, dynamic> mapMessage = message as Map<dynamic, dynamic>;
+        final Map<dynamic, dynamic> mapMessage =
+            message as Map<dynamic, dynamic>;
         final QiniuTaskUpdate input = QiniuTaskUpdate._fromMap(mapMessage);
         api.taskUpdate(input);
       });
     }
     {
-      const BasicMessageChannel<dynamic> channel =
-          BasicMessageChannel<dynamic>('dev.flutter.pigeon.QiniuFlutterApi.taskComplete', StandardMessageCodec());
+      const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+          'dev.flutter.pigeon.QiniuFlutterApi.taskComplete',
+          StandardMessageCodec());
       channel.setMessageHandler((dynamic message) async {
-        final Map<dynamic, dynamic> mapMessage = message as Map<dynamic, dynamic>;
+        final Map<dynamic, dynamic> mapMessage =
+            message as Map<dynamic, dynamic>;
         final QiniuTaskComplete input = QiniuTaskComplete._fromMap(mapMessage);
         api.taskComplete(input);
       });
     }
     {
-      const BasicMessageChannel<dynamic> channel =
-          BasicMessageChannel<dynamic>('dev.flutter.pigeon.QiniuFlutterApi.taskCancelled', StandardMessageCodec());
+      const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+          'dev.flutter.pigeon.QiniuFlutterApi.taskCancelled',
+          StandardMessageCodec());
       channel.setMessageHandler((dynamic message) async {
-        final Map<dynamic, dynamic> mapMessage = message as Map<dynamic, dynamic>;
-        final QiniuTaskCancellation input = QiniuTaskCancellation._fromMap(mapMessage);
+        final Map<dynamic, dynamic> mapMessage =
+            message as Map<dynamic, dynamic>;
+        final QiniuTaskCancellation input =
+            QiniuTaskCancellation._fromMap(mapMessage);
         api.taskCancelled(input);
       });
     }
     {
-      const BasicMessageChannel<dynamic> channel =
-          BasicMessageChannel<dynamic>('dev.flutter.pigeon.QiniuFlutterApi.taskError', StandardMessageCodec());
+      const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
+          'dev.flutter.pigeon.QiniuFlutterApi.taskError',
+          StandardMessageCodec());
       channel.setMessageHandler((dynamic message) async {
-        final Map<dynamic, dynamic> mapMessage = message as Map<dynamic, dynamic>;
+        final Map<dynamic, dynamic> mapMessage =
+            message as Map<dynamic, dynamic>;
         final QiniuTaskError input = QiniuTaskError._fromMap(mapMessage);
         api.taskError(input);
       });
     }
   }
 }
-

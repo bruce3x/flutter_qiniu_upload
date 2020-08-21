@@ -1,5 +1,5 @@
 name: flutter_qiniu_upload
-description: A flutter plugin for Qiniu file upload. Support multiple file uploads, listen progress and cancel uploads. 七牛文件上传插件，支持多文件上传、监听进度和取消上传。
+description: A flutter plugin for Qiniu file upload. Support multiple file uploads, listen progress and cancel uploads.
 version: 0.0.1
 homepage: https://github.com/bruce3x/flutter_qiniu_upload
 

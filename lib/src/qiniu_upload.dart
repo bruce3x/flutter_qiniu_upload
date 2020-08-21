@@ -9,15 +9,19 @@ import 'package:flutter_qiniu_upload/src/exception.dart';
 class QiniuUpload extends QiniuFlutterApi {
   static final _hostApi = QiniuHostApi();
 
-  static final _completerMap = HashMap<String, Completer<QiniuFile>>();
-  static final _progressMap = HashMap<String, StreamController<QiniuProgress>>();
+  static final _completerMap = HashMap<String, Completer>();
+  static final _progressMap = HashMap<String, StreamController>();
 
   static void initialize() {
     QiniuFlutterApi.setup(QiniuUpload());
   }
 
   /// return the uploaded file info from qiniu.
-  static Future<QiniuFile> uploadDirectly(File file, String token, [String key]) async {
+  static Future<QiniuFile> uploadDirectly(
+    File file,
+    String token, [
+    String key,
+  ]) async {
     final request = QiniuUploadRequest()
       ..file = file.path
       ..key = key
@@ -31,7 +35,11 @@ class QiniuUpload extends QiniuFlutterApi {
   }
 
   ///  return the request id which can be used to query progress or cancel uploading.
-  static Future<String> upload(File file, String token, [String key]) async {
+  static Future<String> upload(
+    File file,
+    String token, [
+    String key,
+  ]) async {
     final request = QiniuUploadRequest()
       ..file = file.path
       ..key = key
