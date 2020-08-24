@@ -1,9 +1,9 @@
 # flutter_qiniu_upload
 
-![support-android](https://img.shields.io/badge/support-Android-green)
-![pub](https://img.shields.io/pub/v/flutter_qiniu_upload)
-![stars](https://img.shields.io/github/stars/bruce3x/flutter_qiniu_upload)
-![license](https://img.shields.io/github/license/bruce3x/flutter_qiniu_upload)
+[![support-android](https://img.shields.io/badge/support-Android-green)](https://pub.dev/packages/flutter_qiniu_upload)
+[![pub](https://img.shields.io/pub/v/flutter_qiniu_upload)](https://pub.dev/packages/flutter_qiniu_upload)
+[![stars](https://img.shields.io/github/stars/bruce3x/flutter_qiniu_upload)](https://github.com/bruce3x/flutter_qiniu_upload)
+[![license](https://img.shields.io/github/license/bruce3x/flutter_qiniu_upload)](./LICENSE)
 
 A flutter plugin for Qiniu file upload. Support multiple file uploads, listen progress and cancel uploads. 
 
